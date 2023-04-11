@@ -1,0 +1,10 @@
+PKG_NAME=mqtt_proxy
+PKG_SUMMARY=mqtt_proxy-summary
+PKG_DESCRIPTION=mqtt_proxy-description
+PKG_KEYWORDS=mqtt_proxy-keywords
+PKG_VERSION=0.0.1
+PKG_DISTNAME=mqtt_proxy-0.0.1
+PKG_REPO=https://github.com/pnoulis/mqtt_proxy
+PKG_HOMEPAGE=https://github.com/pnoulis/mqtt_proxy#readme
+PKG_BUGREPORT=https://github.com/pnoulis/mqtt_proxy/issues
+PKG_DOCS=https://github.com/pnoulis/mqtt_proxy#readme
