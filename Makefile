@@ -99,10 +99,14 @@ fmt:
 fmt-check:
 	$(FORMATER) --check "$${params:-.}"
 
-
 .PHONY: env
 env:
 	$(MAKE_ENV) $(params)
+
+# ------------------------------ CLEANS ------------------------------ #
+.PHONY: clean
+clean:
+	rm -rdf ./node_modules
 
 dirs:
 	$(MKDIRP) $(LOGDIR)
