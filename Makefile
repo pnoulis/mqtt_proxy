@@ -38,51 +38,55 @@ scratch:
 	$(MAKE_ENV) --mode=dev --host=dev
 	set -a; source ./.env && $(NODE) ./tmp/scratch.js
 
-.PHONY: run
-run: dirs
+# ------------------------------ RUN ------------------------------ #
+.PHONY: run run-dev run-staging run-prod
+run: run-dev
+
+run-dev:
 	$(MAKE_ENV) --mode=dev --host=dev
 	set -a; source ./.env && $(NODE) ./src/main.js
 
-.PHONY: run-staging
-run-staging: dirs
+run-staging:
 	$(MAKE_ENV) --mode=staging --host=dev
 	set -a; source ./.env && $(NODE) ./src/main.js
 
-.PHONY: run-prod
-run-prod: dirs
+run-prod:
 	$(MAKE_ENV) --mode=prod --host=dev
 	set -a; source ./.env && $(NODE) ./src/main.js
 
-.PHONY: build
-build:
-	$(MAKE_ENV) --mode=dev
-	set -a; source ./.env && $(BUILD_SYS) build
+# ------------------------------ BUILD ------------------------------ #
+.PHONY: build build-dev build-staging build-prod
+build: build-dev
 
-.PHONY: build-staging
+build-dev:
+	$(MAKE_ENV) --mode=dev --host=prod
+	set -a; source ./.env && $(BUILD_SYS) build --mode=dev
+
 build-staging:
-	$(MAKE_ENV) --mode=staging
-	set -a; source ./.env && $(BUILD_SYS) build
+	$(MAKE_ENV) --mode=staging --host=prod
+	set -a; source ./.env && $(BUILD_SYS) build --mode=staging
 
-.PHONY: build-prod
 build-prod:
-	$(MAKE_ENV) --mode=prod
-	set -a; source ./.env && $(BUILD_SYS) build
+	$(MAKE_ENV) --mode=prod --host=prod
+	set -a; source ./.env && $(BUILD_SYS) build --mode=prod
 
-.PHONY: test
-test:
+# ------------------------------ TEST ------------------------------ #
+.PHONY: test test-dev test-staging test-prod
+test: test-dev
+
+test-dev:
 	$(MAKE_ENV) --mode=dev --host=dev
-	$(VITEST) run --reporter verbose
+	set -a; source ./.env && $(VITEST) run --reporter verbose --mode=dev
 
-.PHONY: test-staging
 test-staging:
 	$(MAKE_ENV) --mode=staging --host=dev
-	$(VITEST) run --reporter verbose
+	set -a; source ./.env && $(VITEST) run --reporter verbose --mode=staging
 
-.PHONY: test-prod
 test-prod:
 	$(MAKE_ENV) --mode=prod --host=dev
-	$(VITEST) run --reporter verbose
+	set -a; source ./.env && $(VITEST) run --reporter verbose --mode=prod
 
+# ------------------------------ LINT ------------------------------ #
 .PHONY: lint
 lint:
 	$(LINTER) --ext js,jsx --fix "$${params:-.}"
@@ -91,6 +95,7 @@ lint:
 lint-check:
 	$(LINTER) --ext js,jsx "$${params:-.}"
 
+# ------------------------------ FORMAT ------------------------------ #
 .PHONY: fmt
 fmt:
 	$(FORMATER) --write "$${params:-.}"
@@ -99,14 +104,18 @@ fmt:
 fmt-check:
 	$(FORMATER) --check "$${params:-.}"
 
+# ------------------------------ CLEAN ------------------------------ #
+.PHONY: clean distclean
+clean:
+	rm -rdf dist build
+
+distclean: clean
+	rm -rdf node_modules
+
+# ------------------------------ VARIOUS ------------------------------ #
 .PHONY: env
 env:
 	$(MAKE_ENV) $(params)
-
-# ------------------------------ CLEANS ------------------------------ #
-.PHONY: clean
-clean:
-	rm -rdf ./node_modules
 
 dirs:
 	$(MKDIRP) $(LOGDIR)
