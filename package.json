@@ -28,6 +28,9 @@
     "node": ">=19.8.1",
     "npm": ">=9.5.1"
   },
+  "dependencies": {
+    "js_utils": "../js_utils"
+  },
   "devDependencies": {
     "@types/react": "^18.0.34",
     "@types/react-dom": "^18.0.11",
@@ -38,7 +41,6 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "js_utils": "github:pnoulis/js_utils",
     "pino": "^8.11.0",
     "pino-pretty": "^10.0.0",
     "prettier": "^2.8.7",

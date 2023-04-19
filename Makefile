@@ -110,7 +110,7 @@ clean:
 	rm -rdf dist build
 
 distclean: clean
-	rm -rdf node_modules
+	rm -rdf node_modules package-lock.json
 
 # ------------------------------ VARIOUS ------------------------------ #
 .PHONY: env
