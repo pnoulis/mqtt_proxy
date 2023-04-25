@@ -281,7 +281,7 @@ Proxy.prototype.notifyClients = function notifyClients(sub, msg) {
     sub,
     clients.filter((client) => {
       client.cb(error, decoded);
-      return client.mode !== "persistent";
+      return client.mode === "persistent";
     })
   );
 };
