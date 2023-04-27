@@ -14,61 +14,64 @@ MKDIRP = /usr/bin/mkdir -p
 CP = /usr/bin/cp
 RM = /usr/bin/rm
 CHMOD = /usr/bin/chmod
-NODE = npx node
-BUILD_SYS = npx vite
+BUILDER = npx vite
+TESTER = npx vitest
 LINTER = npx eslint
 FORMATER = npx prettier
-VITEST = npx vitest
+PRETTY_OUTPUT = npx pino-pretty
 MAKE_ENV = ./scripts/dotenv.sh --pkgdir=. --envdir=./config/env
 
 .PHONY: all
-all: run
+all: build
 
-.PHONY: node-run
-node-run:
+# ------------------------------ RUN ------------------------------ #
+.PHONY: run scratch run-build
+run:
 	@if test -z "$$params"; then echo \
-	"make node-exec missing params: -> params=./file make node-exec"; \
+	"make run missing params: -> params=./file make run"; \
 	exit 1; \
 	fi
 	$(MAKE_ENV) --mode=dev --host=dev
-	@set -a; source ./.env && $(NODE) "$${params}"
+	@set -a; source ./.env && node "$${params}" | $(PRETTY_OUTPUT)
 
-.PHONY: scratch
-scratch:
+run-scratch:
 	$(MAKE_ENV) --mode=dev --host=dev
-	set -a; source ./.env && $(NODE) ./tmp/scratch.js
+	set -a; source ./.env && node ./tmp/scratch.js | $(PRETTY_OUTPUT)
 
-# ------------------------------ RUN ------------------------------ #
-.PHONY: run run-dev run-staging run-prod
-run: run-dev
+run-build:
+	set -a; source ./.env && node ./dist/index.js | $(PRETTY_OUTPUT)
 
-run-dev:
+# ------------------------------ DEV ------------------------------ #
+.PHONY: dev dev-dev dev-staging dev-prod
+dev: dev-dev
+
+dev-dev:
 	$(MAKE_ENV) --mode=dev --host=dev
-	set -a; source ./.env && $(NODE) ./src/main.js
+	set -a; source ./.env && $(BUILDER) serve --mode=dev
 
-run-staging:
+dev-staging: dirs
 	$(MAKE_ENV) --mode=staging --host=dev
-	set -a; source ./.env && $(NODE) ./src/main.js
+	set -a; source ./.env && $(BUILDER) serve --mode=staging
 
-run-prod:
+dev-prod: dirs
 	$(MAKE_ENV) --mode=prod --host=dev
-	set -a; source ./.env && $(NODE) ./src/main.js
+	set -a; source ./.env && $(BUILDER) serve --mode=prod
 
 # ------------------------------ BUILD ------------------------------ #
 .PHONY: build build-dev build-staging build-prod
-build: build-dev
+build: build-prod
 
 build-dev:
 	$(MAKE_ENV) --mode=dev --host=prod
-	set -a; source ./.env && $(BUILD_SYS) build --mode=dev
+	set -a; source ./.env && $(BUILDER) build --mode=dev
 
 build-staging:
 	$(MAKE_ENV) --mode=staging --host=prod
-	set -a; source ./.env && $(BUILD_SYS) build --mode=staging
+	set -a; source ./.env && $(BUILDER) build --mode=staging
 
 build-prod:
 	$(MAKE_ENV) --mode=prod --host=prod
-	set -a; source ./.env && $(BUILD_SYS) build --mode=prod
+	set -a; source ./.env && $(BUILDER) build --mode=prod
 
 # ------------------------------ TEST ------------------------------ #
 .PHONY: test test-dev test-staging test-prod
@@ -76,15 +79,15 @@ test: test-dev
 
 test-dev:
 	$(MAKE_ENV) --mode=dev --host=dev
-	set -a; source ./.env && $(VITEST) run --reporter verbose --mode=dev
+	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=dev
 
 test-staging:
 	$(MAKE_ENV) --mode=staging --host=dev
-	set -a; source ./.env && $(VITEST) run --reporter verbose --mode=staging
+	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=staging
 
 test-prod:
 	$(MAKE_ENV) --mode=prod --host=dev
-	set -a; source ./.env && $(VITEST) run --reporter verbose --mode=prod
+	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=prod
 
 # ------------------------------ LINT ------------------------------ #
 .PHONY: lint
@@ -113,9 +116,9 @@ distclean: clean
 	rm -rdf node_modules package-lock.json
 
 # ------------------------------ VARIOUS ------------------------------ #
-.PHONY: env
-env:
-	$(MAKE_ENV) $(params)
-
 dirs:
 	$(MKDIRP) $(LOGDIR)
+
+.PHONY: env
+env:
+	$(MAKE_ENV) --mode=$(params)
