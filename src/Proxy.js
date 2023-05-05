@@ -102,7 +102,7 @@ Proxy.prototype.registerClient = function registerClient(sub, options, cb) {
     mode: options.mode,
   };
   clients.push(client);
-  this.logger.trace("Registered new client", clients);
+  // this.logger.trace("Registered new client", clients);
   return client;
 };
 
@@ -122,7 +122,7 @@ Proxy.prototype.unregisterClient = function unregisterClient(sub, clientId) {
     this.logger.warn(`Client: ${clientId} missing from subscription list`);
   } else {
     clients.splice(client, 1);
-    this.logger.trace(`Successfully unregistered client: ${clientId}`, clients);
+    // this.logger.trace(`Successfully unregistered client: ${clientId}`, clients);
   }
 };
 
@@ -249,7 +249,7 @@ Proxy.prototype._publish = function _publish(pub, payload, cb) {
       this.logger.trace(`Failed to publish to topic: ${pub}`, err);
       cb(new MqttProxyError("Mqtt Broker error", err));
     } else {
-      this.logger.trace(`Successfully published to topic: ${pub}`);
+      // this.logger.trace(`Successfully published to topic: ${pub}`);
       cb();
     }
   });
