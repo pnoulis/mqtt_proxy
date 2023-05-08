@@ -249,7 +249,7 @@ Proxy.prototype._publish = function _publish(pub, payload, cb) {
       this.logger.trace(`Failed to publish to topic: ${pub}`, err);
       cb(new MqttProxyError("Mqtt Broker error", err));
     } else {
-      // this.logger.trace(`Successfully published to topic: ${pub}`);
+      console.log(`Successfully published to topic: ${pub}`);
       cb();
     }
   });
@@ -262,6 +262,9 @@ Proxy.prototype._publish = function _publish(pub, payload, cb) {
  * not be established
  **/
 Proxy.prototype.notifyClients = function notifyClients(sub, msg) {
+  console.log("SUBSCRIPTION MSG");
+  console.log(sub);
+  console.log(msg);
   const clients = this.subscriptions.get(sub);
   if (!clients || clients.length === 0) {
     return;
