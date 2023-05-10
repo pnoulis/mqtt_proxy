@@ -26,6 +26,7 @@ package-lock.json
 # emacs
 # cached changes
 \#*\#
+\.#*
 # undo cache
 *~
 
