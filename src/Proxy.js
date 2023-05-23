@@ -108,12 +108,12 @@ Proxy.prototype.subscribe = function subscribe(route, options, listener) {
 
 Proxy.prototype._subscribe = function _subscribe(sub, cb) {
   if (this.subscriptions.has(sub)) {
-    return process.nextTick(() => cb(null, this.subscriptions.get(sub)));
+    return setTimeout(() => cb(null, this.subscriptions.get(sub)), 1);
   }
 
   // TODO task runner should handle this.
   (function trySub(tries = 0) {
-    process.nextTick(() => {
+    setTimeout(() => {
       this.server.subscribe(sub, (err) => {
         if (!err) {
           this.subscriptions.set(sub, []);
@@ -124,7 +124,7 @@ Proxy.prototype._subscribe = function _subscribe(sub, cb) {
           cb(new Error(`Failed to subscribe to topic:${sub}`, { cause: err }));
         }
       });
-    });
+    }, 10);
   }).bind(this)();
 };
 
@@ -148,6 +148,7 @@ Proxy.prototype.publish = function publish(
       switch (options.mode) {
         case "ff":
           this._publish(pub, encoded, (err) => (err ? reject(err) : resolve()));
+          break;
         case "response":
           this.subscribe(route, { mode: "response" }, (err, msg) =>
             err ? reject(err) : resolve(msg)
@@ -161,6 +162,7 @@ Proxy.prototype.publish = function publish(
               });
             })
             .catch((err) => reject(err));
+          break;
         default:
           reject(`Unsupported transaction mode:${options.mode} by publish`);
       }
@@ -256,7 +258,7 @@ Proxy.prototype.notifyClients = function notifyClients(sub, msg) {
   this.subscriptions.set(
     sub,
     clients.filter((client) => {
-      client.cb(error, decoded);
+      client.listener(error, decoded);
       return client.mode === "persistent";
     })
   );
