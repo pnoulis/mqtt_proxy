@@ -4,7 +4,9 @@
   "description": "mqtt_proxy-summary",
   "homepage": "https://github.com/pnoulis/mqtt_proxy#readme",
   "bugs": "https://github.com/pnoulis/mqtt_proxy/issues",
-  "keywords": ["mqtt_proxy-keywords"],
+  "keywords": [
+    "mqtt_proxy-keywords"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/pnoulis/mqtt_proxy.git"
@@ -15,7 +17,9 @@
     "build": "make build",
     "test": "make test"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js"
@@ -41,6 +45,7 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "mqtt": "^4.3.7",
     "pino": "^8.11.0",
     "pino-pretty": "^10.0.0",
     "prettier": "^2.8.7",
