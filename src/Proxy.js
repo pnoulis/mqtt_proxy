@@ -183,7 +183,6 @@ Proxy.prototype._publish = function _publish(pub, payload, cb) {
       this.logger.error(`Failed to publish to topic: ${pub}`, err);
       cb(new Error(`Failed to publish to topic:${pub}`, { cause: err }));
     } else {
-      console.log(`Successfully published to topic: ${pub}`);
       cb();
     }
   });
