@@ -111,8 +111,7 @@ Proxy.prototype._subscribe = function _subscribe(sub, cb) {
     return setTimeout(() => cb(null, this.subscriptions.get(sub)), 1);
   }
 
-  // TODO task runner should handle this.
-  (function trySub(tries = 0) {
+  const trySub = (tries = 0) => {
     setTimeout(() => {
       this.server.subscribe(sub, (err) => {
         if (!err) {
@@ -125,7 +124,8 @@ Proxy.prototype._subscribe = function _subscribe(sub, cb) {
         }
       });
     }, 10);
-  }).bind(this)();
+  };
+  trySub(1);
 };
 
 /**
