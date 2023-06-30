@@ -1,0 +1,21 @@
+mqtt proxy
+
+The caller subscribes to a channel.
+
+mqtt proxy is responsible for:
+
+add the Client to the Subscriptions map
+subscribe to the server topic
+register a listener for incoming traffic
+return the Client to the caller, so that he may unsubscribe at any point in time.
+
+** new architecture
+The Subscription class represents the clients to the proxy.
+A Subscription instance is responsible for holding:
+
+1. listeners that should be invoked when a message is received.
+2. publish actions that are to be executed when the subscription is online
+
+** publish
+is there a subscription?
+no -> create one
