@@ -3,8 +3,8 @@ class State {
     this.subscription = subscription;
   }
 
-  publish(client) {}
-  subscribe(client) {}
+  publish() {}
+  subscribe() {}
 }
 
 export { State };

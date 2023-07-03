@@ -26,6 +26,7 @@ caller returns
 Creation of a new subscription instance.
 * Subscription class
 Buffer jobs to run until some condition is met.
+
 it has a subscription to establish.
 It needs to publish messages.
 It needs to receive messages and deliver them to clients.
@@ -35,4 +36,9 @@ At any point in time, a subscription may be:
 1. In the process of establishing a connection.
 2. Publishing a message
 3. Delivering a message
-4. Admitting new clients.
+
+
+
+subscribe to the topic
+publish a message.
+wait for its response.

@@ -5,8 +5,9 @@ class Delivering extends State {
     super(subscription);
   }
 
-  publish(client) {}
-  subscribe(client) {}
+  init() {
+    this.subscription.publishNextClient();
+  }
 }
 
 export { Delivering };

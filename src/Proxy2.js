@@ -1,52 +1,57 @@
-import { Subscription, Client } from "./Client.js";
+import { Registry } from "./Registry.js";
+import { Subscription } from "./Subscription.js";
+import { PublishingClient } from "./Client.js";
 
 class Proxy {
-  constructor() {
+  constructor(server, registry) {
+    this.server = server;
+    this.registry = new Registry(registry);
     this.subscriptions = new Map();
+    this.server.on("message", (sub, msg) => {
+      const subscription = this.subscriptions.get(sub);
+      try {
+        msg = this.decode(msg);
+        subscription.deliver(null, msg);
+      } catch (err) {
+        subscription.deliver(err);
+      }
+    });
   }
 }
 
-Proxy.prototype._subscribe = function _subscribe(sub) {
-  return new Promise((resolve, reject) => {
-    let subscription = this.subscriptions.get(sub);
-    if (subscription) {
-      resolve(subscription);
-    }
-
-    const subscribe = (tries = 0) => {
-      this.server.subscribe(sub, (err) => {
-        if (!err) {
-          this.subscriptions.set(sub, new Subscription(sub));
-          resolve(this.subscriptions.get(sub));
-        } else if (tries < 10) {
-          subscribe(tries + 1);
-        } else {
-          reject();
-        }
-      });
-    };
-
-    subscribe();
-  });
+Proxy.prototype.decode = function decode(msg = "") {
+  try {
+    const decoded = msg.toString() || {};
+    return decoded;
+  } catch (err) {
+    throw new Error("Failed to decode message");
+  }
 };
 
-Proxy.prototype.subscribe = function subscribe(route, options, cb) {};
-
-Proxy.prototype._publish = function _publish(pub, message, cb) {
-  this.server.publish(pub, message, cb);
+Proxy.prototype.encode = function encode(msg = "") {
+  try {
+    const encoded = JSON.stringify(msg);
+    return encoded;
+  } catch (err) {
+    throw new Error("Failed to encode message");
+  }
 };
 
-Proxy.protoype.publish = function publish(address, message, options) {
+Proxy.prototype.publish = function publish(address, message, options) {
   return new Promise((resolve, reject) => {
     try {
       const { pub, sub } = this.registry.resolve(address);
       const encoded = this.encode(message);
-      let subscription = this.subscription.get(sub);
+      let subscription = this.subscriptions.get(sub);
       if (!subscription) {
-        subscription = new Subscription(this.server, sub);
+        subscription = new Subscription(this.server, pub, sub);
+        this.subscriptions.set(sub, subscription);
       }
-      const client = new Client(resolve, reject, encoded, options);
-      return subscription.publish(client);
+      const client = new PublishingClient(
+        (cb) => this.server.publish(pub, encoded, cb),
+        (err, msg) => (err ? reject(err) : resolve(msg))
+      );
+      subscription.publish(client);
     } catch (err) {
       // 1. Address could not be resolved.
       // 2. Message could not be encoded.
@@ -55,6 +60,4 @@ Proxy.protoype.publish = function publish(address, message, options) {
   });
 };
 
-Proxy.prototype.subscribe = function subscribe(address, listener, options) {};
-
-Proxy.prototype.collectListeningClients = function collectListeningClients() {};
+export { Proxy };
