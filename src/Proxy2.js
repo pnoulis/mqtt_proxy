@@ -40,12 +40,16 @@ Proxy.protoype.publish = function publish(address, message, options) {
   return new Promise((resolve, reject) => {
     try {
       const { pub, sub } = this.registry.resolve(address);
-      this._subscribe(sub)
-        .then((subscription) => {
-          resolve(subscription.publish(options));
-        })
-        .catch(reject);
+      const encoded = this.encode(message);
+      let subscription = this.subscription.get(sub);
+      if (!subscription) {
+        subscription = new Subscription(this.server, sub);
+      }
+      const client = new Client(resolve, reject, encoded, options);
+      return subscription.publish(client);
     } catch (err) {
+      // 1. Address could not be resolved.
+      // 2. Message could not be encoded.
       reject(err);
     }
   });

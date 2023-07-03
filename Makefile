@@ -74,20 +74,24 @@ build-prod:
 	set -a; source ./.env && $(BUILDER) build --mode=prod
 
 # ------------------------------ TEST ------------------------------ #
-.PHONY: test test-dev test-staging test-prod
+.PHONY: test test-testing test-dev test-staging test-prod
 test: test-dev
+
+test-testing:
+	$(MAKE_ENV) --mode=testing --host=dev
+	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=testing $(params)
 
 test-dev:
 	$(MAKE_ENV) --mode=dev --host=dev
-	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=dev
+	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=dev $(params)
 
 test-staging:
 	$(MAKE_ENV) --mode=staging --host=dev
-	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=staging
+	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=staging $(params)
 
 test-prod:
 	$(MAKE_ENV) --mode=prod --host=dev
-	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=prod
+	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=prod $(params)
 
 # ------------------------------ LINT ------------------------------ #
 .PHONY: lint
