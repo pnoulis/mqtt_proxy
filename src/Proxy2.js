@@ -1,14 +1,24 @@
+import { TaskRunner } from "js_utils/task_runner";
 import { Registry } from "./Registry.js";
 import { Subscription } from "./Subscription.js";
-import { PublishingClient } from "./Client.js";
+import { SubscriptionClient, PublishingClient } from "./Client.js";
 
 class Proxy {
-  constructor(server, registry) {
+  constructor({ server, registry }) {
     this.server = server;
     this.registry = new Registry(registry);
     this.subscriptions = new Map();
+    this.tr = new TaskRunner({
+      isConnected: function () {
+        return server.connected;
+      },
+    });
+
     this.server.on("message", (sub, msg) => {
       const subscription = this.subscriptions.get(sub);
+      if (!subscription) {
+        return;
+      }
       try {
         msg = this.decode(msg);
         subscription.deliver(null, msg);
@@ -37,27 +47,76 @@ Proxy.prototype.encode = function encode(msg = "") {
   }
 };
 
+Proxy.prototype.subscribe = function subscribe(address, listener, options) {
+  return this.tr.run(
+    () =>
+      new Promise((resolve, reject) => {
+        try {
+          const { pub, sub } = this.registry.resolve(address);
+          let subscription = this.subscriptions.get(sub);
+          if (!subscription) {
+            subscription = new Subscription(this.server, pub, sub);
+            this.subscriptions.set(sub, subscription);
+          }
+          options = {
+            mode: "persistent",
+            ...options,
+          };
+          if (!/response|persistent/.test(options.mode)) {
+            reject(
+              new Error(
+                `subscribe() does not support options.mode:${options.mode}`
+              )
+            );
+          }
+          const client = subscription.subscribe(
+            new SubscriptionClient(listener, options)
+          );
+          resolve(client.unsubscribe.bind(client));
+        } catch (err) {
+          reject(err);
+        }
+      })
+  );
+};
+
 Proxy.prototype.publish = function publish(address, message, options) {
-  return new Promise((resolve, reject) => {
-    try {
-      const { pub, sub } = this.registry.resolve(address);
-      const encoded = this.encode(message);
-      let subscription = this.subscriptions.get(sub);
-      if (!subscription) {
-        subscription = new Subscription(this.server, pub, sub);
-        this.subscriptions.set(sub, subscription);
-      }
-      const client = new PublishingClient(
-        (cb) => this.server.publish(pub, encoded, cb),
-        (err, msg) => (err ? reject(err) : resolve(msg))
-      );
-      subscription.publish(client);
-    } catch (err) {
-      // 1. Address could not be resolved.
-      // 2. Message could not be encoded.
-      reject(err);
-    }
-  });
+  return this.tr.run(
+    () =>
+      new Promise((resolve, reject) => {
+        try {
+          const { pub, sub } = this.registry.resolve(address);
+          const encoded = this.encode(message);
+          let subscription = this.subscriptions.get(sub);
+          if (!subscription) {
+            subscription = new Subscription(this.server, pub, sub);
+            this.subscriptions.set(sub, subscription);
+          }
+          options = {
+            mode: "response",
+            ...options,
+          };
+          if (!/response|ff/.test(options.mode)) {
+            reject(
+              new Error(
+                `publish() does not support options.mode:${options.mode}`
+              )
+            );
+          }
+          subscription.publish(
+            new PublishingClient(
+              (cb) => this.server.publish(pub, encoded, cb),
+              function (err, msg) {
+                return err ? reject(err) : resolve(msg);
+              },
+              options
+            )
+          );
+        } catch (err) {
+          reject(err);
+        }
+      })
+  );
 };
 
 export { Proxy };

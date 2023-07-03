@@ -1,23 +1,22 @@
 import { uuid } from "js_utils";
 
 class Client {
-  constructor(options = {}) {
-    // time registered
+  constructor(options) {
     this.id = uuid();
-    this.treg = Date.now();
+    this.mode = options.mode;
   }
 
-  unsubscribe(subscription) {
+  unsubscribe() {
     let clientIndex = -1;
-    for (let i = 0; i < subscription.clients.length; i++) {
-      if (subscription.clients[i].id === this.id) {
+    for (let i = 0; i < this.subscription.clients.length; i++) {
+      if (this.subscription.clients[i].id === this.id) {
         clientIndex = i;
       }
     }
     if (clientIndex > -1) {
-      subscription.clients = subscription.clients
+      this.subscription.clients = this.subscription.clients
         .slice(0, clientIndex)
-        .concat(subscription.clients.slice(clientIndex + 1));
+        .concat(this.subscription.clients.slice(clientIndex + 1));
     } else {
       throw new Error(
         `Failed to unsubscribe missing client with id:${this.id}`
@@ -29,15 +28,15 @@ class Client {
 }
 
 class SubscriptionClient extends Client {
-  constructor(deliver) {
-    super();
+  constructor(deliver, options) {
+    super(options);
     this.deliver = deliver;
   }
 }
 
 class PublishingClient extends Client {
-  constructor(publish, deliver) {
-    super();
+  constructor(publish, deliver, options) {
+    super(options);
     this.publish = publish;
     this.deliver = deliver;
   }

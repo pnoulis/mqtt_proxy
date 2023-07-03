@@ -5,17 +5,6 @@ import { Up } from "./StateUp.js";
 import { Delivering } from "./StateDelivering.js";
 import { SubscriptionClient, PublishingClient } from "./Client.js";
 
-/*
-  A subscription at any point in time may be:
-  1. Establishing a connection. (Asynchronous)
-  2. Publishing a message. (Asynchronous)
-  3. Waiting for a response. (Synchronous)
-  4. Delivering a message.
-  4. Admitting new clients. (Asynchronous)
-
-  States: Down Up Devivering
- */
-
 class Subscription {
   constructor(server, pub, sub) {
     stateful.construct.call(this);
@@ -52,6 +41,30 @@ class Subscription {
     }
   }
 
+  getRecipients() {
+    let publisher = null;
+    if (this.publisher && this.publisher.mode !== "ff") {
+      publisher = this.publisher;
+    }
+    const subs = [];
+    const newClients = [];
+    for (let i = 0; i < this.clients.length; i++) {
+      if (this.clients[i] instanceof SubscriptionClient) {
+        subs.push(this.clients[i]);
+        if (this.clients[i].mode !== "response") {
+          newClients.push(this.clients[i]);
+        }
+      } else {
+        newClients.push(this.clients[i]);
+      }
+    }
+    this.clients = newClients;
+    return {
+      publisher,
+      subs,
+    };
+  }
+
   setNextPublishingClient() {
     let publisherIndex = -1;
     for (let i = 0; i < this.clients.length; i++) {
@@ -69,6 +82,7 @@ class Subscription {
     } else {
       this.publisher = null;
     }
+    return this.publisher;
   }
 
   publishNextClient() {
@@ -81,21 +95,30 @@ class Subscription {
   }
 
   deliver(err, msg) {
-    if (this.publisher) {
-      this.publisher.deliver(err, msg);
+    const { publisher, subs } = this.getRecipients();
+    if (publisher) {
+      publisher.deliver(err, msg);
     }
-    for (let i = 0; i < this.clients.length; i++) {
-      if (this.clients[i] instanceof SubscriptionClient) {
-        this.clients[i].deliver(err, msg);
-      }
+    for (let i = 0; i < subs.length; i++) {
+      subs[i].deliver(err, msg);
     }
     this.publishNextClient();
   }
 
   // interface
   publish(client) {
+    client.subscription = this;
     this.clients.push(client);
     this.state.publish();
+    return client;
+  }
+
+  // interface
+  subscribe(client) {
+    client.subscription = this;
+    this.clients.push(client);
+    this.state.subscribe();
+    return client;
   }
 }
 stateful(Subscription, [Down, Connecting, Up, Delivering]);

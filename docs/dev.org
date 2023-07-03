@@ -42,3 +42,6 @@ At any point in time, a subscription may be:
 subscribe to the topic
 publish a message.
 wait for its response.
+* Proxy class
+** At publish or subscribe the proxy should connect to the mqtt server in case the connection has been dropped
+Task runner could be used.
