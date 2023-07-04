@@ -6,7 +6,15 @@ SHELL = /usr/bin/bash
 .DEFAULT_GOAL := all
 
 # Critical Paths
-LOGDIR=var/log
+SRCDIR := .
+LOGDIR := var/log
+BUILDIR := $(SRCDIR)/build
+DISTDIR := $(SRCDIR)/dist
+# Monorepo dirs
+AGENT_FACTORY := $(SRCDIR)/../..
+SHARED := $(AGENT_FACTORY)/shared
+# preset environment dirs
+ENVDIRS = $(SHARED)/env $(SRCDIR)/config/env $(SRCDIR)
 
 # Programs
 INSTALL = /usr/bin/install
@@ -14,84 +22,69 @@ MKDIRP = /usr/bin/mkdir -p
 CP = /usr/bin/cp
 RM = /usr/bin/rm
 CHMOD = /usr/bin/chmod
-BUILDER = npx vite
+INTERPRETER = node
+BUNDLER = npx vite
 TESTER = npx vitest
 LINTER = npx eslint
 FORMATER = npx prettier
+DOTENV = ~/bin/dotenv
 PRETTY_OUTPUT = npx pino-pretty
-MAKE_ENV = ./scripts/dotenv.sh --pkgdir=. --envdir=./config/env
 
 .PHONY: all
 all: build
 
 # ------------------------------ RUN ------------------------------ #
-.PHONY: run scratch run-build
+.PHONY: run
+run: mode ?= development
+run: env
+run: file ?= ./tmp/scratch.js
 run:
-	@if test -z "$$params"; then echo \
+	@if test -z "$(file)"; then echo \
 	"make run missing params: -> params=./file make run"; \
 	exit 1; \
 	fi
-	$(MAKE_ENV) --mode=dev --host=dev
-	@set -a; source ./.env && node "$${params}" | $(PRETTY_OUTPUT)
+	set -a; source ./.env && \
+	$(INTERPRETER) $(file) \
+	| $(PRETTY_OUTPUT)
 
-run-scratch:
-	$(MAKE_ENV) --mode=dev --host=dev
-	set -a; source ./.env && node ./tmp/scratch.js | $(PRETTY_OUTPUT)
+.PHONY: scratch
+scratch: mode ?= development
+scratch: env
+	set -a; source ./.env && \
+	$(INTERPRETER) ./tmp/scratch.js \
+	| $(PRETTY_OUTPUT)
 
+.PHONY: run-build
 run-build:
-	set -a; source ./.env && node ./dist/index.js | $(PRETTY_OUTPUT)
+	@set -a; source ./.env && \
+	$(INTERPRETER) ./dist/index.js \
+	| $(PRETTY_OUTPUT)
 
 # ------------------------------ DEV ------------------------------ #
-.PHONY: dev dev-dev dev-staging dev-prod
-dev: dev-dev
+.PHONY: dev
 
-dev-dev:
-	$(MAKE_ENV) --mode=dev --host=dev
-	set -a; source ./.env && $(BUILDER) serve --mode=dev
-
-dev-staging: dirs
-	$(MAKE_ENV) --mode=staging --host=dev
-	set -a; source ./.env && $(BUILDER) serve --mode=staging
-
-dev-prod: dirs
-	$(MAKE_ENV) --mode=prod --host=dev
-	set -a; source ./.env && $(BUILDER) serve --mode=prod
+dev: mode ?= development
+dev: env
+	set -a; source ./.env && \
+	$(BUNDLER) server --mode=$(mode)
 
 # ------------------------------ BUILD ------------------------------ #
-.PHONY: build build-dev build-staging build-prod
-build: build-prod
+.PHONY: build
 
-build-dev:
-	$(MAKE_ENV) --mode=dev --host=prod
-	set -a; source ./.env && $(BUILDER) build --mode=dev
-
-build-staging:
-	$(MAKE_ENV) --mode=staging --host=prod
-	set -a; source ./.env && $(BUILDER) build --mode=staging
-
-build-prod:
-	$(MAKE_ENV) --mode=prod --host=prod
-	set -a; source ./.env && $(BUILDER) build --mode=prod
+build: mode ?= production
+build: env
+	set -a; source ./.env && \
+	$(BUNDLER) build --mode=$(mode)
 
 # ------------------------------ TEST ------------------------------ #
-.PHONY: test test-testing test-dev test-staging test-prod
-test: test-dev
+.PHONY: test
 
-test-testing:
-	$(MAKE_ENV) --mode=testing --host=dev
-	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=testing $(params)
-
-test-dev:
-	$(MAKE_ENV) --mode=dev --host=dev
-	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=dev $(params)
-
-test-staging:
-	$(MAKE_ENV) --mode=staging --host=dev
-	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=staging $(params)
-
-test-prod:
-	$(MAKE_ENV) --mode=prod --host=dev
-	set -a; source ./.env && $(TESTER) run --reporter verbose --mode=prod $(params)
+test: mode ?= production
+test: env
+test: suite ?= *
+test:
+	set -a; source ./.env && \
+	$(TESTER) run --reporter verbose --mode=$(mode) $(suite)
 
 # ------------------------------ LINT ------------------------------ #
 .PHONY: lint
@@ -124,5 +117,6 @@ dirs:
 	$(MKDIRP) $(LOGDIR)
 
 .PHONY: env
+env: mode ?= production
 env:
-	$(MAKE_ENV) --mode=$(params)
+	$(DOTENV) --mode=$(mode) $(ENVDIRS)
