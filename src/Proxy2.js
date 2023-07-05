@@ -47,12 +47,12 @@ Proxy.prototype.encode = function encode(msg = "") {
   }
 };
 
-Proxy.prototype.subscribe = function subscribe(address, listener, options) {
+Proxy.prototype.subscribe = function subscribe(topic, listener, options) {
   return this.tr.run(
     () =>
       new Promise((resolve, reject) => {
         try {
-          const { pub, sub } = this.registry.resolve(address);
+          const { pub, sub } = this.registry.resolve(topic);
           let subscription = this.subscriptions.get(sub);
           if (!subscription) {
             subscription = new Subscription(this.server, pub, sub);
@@ -80,12 +80,12 @@ Proxy.prototype.subscribe = function subscribe(address, listener, options) {
   );
 };
 
-Proxy.prototype.publish = function publish(address, message, options) {
+Proxy.prototype.publish = function publish(topic, message, options) {
   return this.tr.run(
     () =>
       new Promise((resolve, reject) => {
         try {
-          const { pub, sub } = this.registry.resolve(address);
+          const { pub, sub } = this.registry.resolve(topic);
           const encoded = this.encode(message);
           let subscription = this.subscriptions.get(sub);
           if (!subscription) {
