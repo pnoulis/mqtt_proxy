@@ -31,7 +31,7 @@ class Proxy {
 
 Proxy.prototype.decode = function decode(msg = "") {
   try {
-    const decoded = msg.toString() || {};
+    const decoded = JSON.parse(msg.toString()) || {};
     return decoded;
   } catch (err) {
     throw new Error("Failed to decode message");

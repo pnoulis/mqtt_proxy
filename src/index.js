@@ -1,1 +1,1 @@
-export { Proxy as MqttProxy } from "./Proxy.js";
+export { Proxy as MqttProxy } from "./Proxy2.js";

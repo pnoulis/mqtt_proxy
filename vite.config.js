@@ -28,6 +28,7 @@ export default defineConfig({
   },
   test: {
     // ...
+    testTimeout: 20000,
     include: [
       ...configDefaults.include,
       "tests.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",

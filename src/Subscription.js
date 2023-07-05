@@ -15,9 +15,6 @@ class Subscription {
   }
 
   connect(cb) {
-    if (this.connecting) {
-      return;
-    }
     const subscribe = (tries = 0) => {
       this.server.subscribe(this.sub, (err) => {
         if (!err) {
@@ -29,7 +26,6 @@ class Subscription {
         }
       });
     };
-    this.connecting = true;
     subscribe();
   }
 
