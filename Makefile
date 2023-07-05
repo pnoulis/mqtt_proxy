@@ -5,6 +5,9 @@ SHELL = /usr/bin/bash
 .DELETE_ON_ERROR:
 .DEFAULT_GOAL := all
 
+# Include package information
+include ./PACKAGE
+
 # Critical Paths
 SRCDIR := .
 LOGDIR := var/log
@@ -14,11 +17,12 @@ DISTDIR := $(SRCDIR)/dist
 AGENT_FACTORY := $(SRCDIR)/../..
 SHARED := $(AGENT_FACTORY)/shared
 # preset environment dirs
-ENVDIRS = $(SHARED)/env $(SRCDIR)/config/env $(SRCDIR)
+ENVDIRS = $(SHARED)/env $(SRCDIR)/config/env $(SRCDIR)/PACKAGE $(SRCDIR)
 
 # Programs
 INSTALL = /usr/bin/install
 MKDIRP = /usr/bin/mkdir -p
+SORT = /usr/bin/sort
 CP = /usr/bin/cp
 RM = /usr/bin/rm
 CHMOD = /usr/bin/chmod
@@ -35,20 +39,15 @@ all: build
 
 # ------------------------------ RUN ------------------------------ #
 .PHONY: run
-run: mode ?= development
+mode ?= 'development'
+file ?= '$(SRCDIR)/tmp/scratch.js'
 run: env
-run: file ?= ./tmp/scratch.js
-run:
-	@if test -z "$(file)"; then echo \
-	"make run missing params: -> params=./file make run"; \
-	exit 1; \
-	fi
 	set -a; source ./.env && \
 	$(INTERPRETER) $(file) \
 	| $(PRETTY_OUTPUT)
 
 .PHONY: scratch
-scratch: mode ?= development
+mode ?= 'development'
 scratch: env
 	set -a; source ./.env && \
 	$(INTERPRETER) ./tmp/scratch.js \
@@ -62,47 +61,47 @@ run-build:
 
 # ------------------------------ DEV ------------------------------ #
 .PHONY: dev
-
-dev: mode ?= development
+mode ?= 'development'
 dev: env
 	set -a; source ./.env && \
 	$(BUNDLER) server --mode=$(mode)
 
 # ------------------------------ BUILD ------------------------------ #
 .PHONY: build
-
-build: mode ?= production
+mode ?= 'production'
 build: env
 	set -a; source ./.env && \
 	$(BUNDLER) build --mode=$(mode)
 
 # ------------------------------ TEST ------------------------------ #
 .PHONY: test
-
-test: mode ?= production
+mode ?= 'testing'
+suite ?= '*'
 test: env
-test: suite ?= *
-test:
 	set -a; source ./.env && \
 	$(TESTER) run --reporter verbose --mode=$(mode) $(suite)
 
 # ------------------------------ LINT ------------------------------ #
 .PHONY: lint
+file ?= '.'
 lint:
-	$(LINTER) --ext js,jsx --fix "$${params:-.}"
+	$(LINTER) --ext js,jsx --fix $(file)
 
 .PHONY: lint-check
+file ?= '.'
 lint-check:
-	$(LINTER) --ext js,jsx "$${params:-.}"
+	$(LINTER) --ext js,jsx $(file)
 
 # ------------------------------ FORMAT ------------------------------ #
 .PHONY: fmt
+file ?= '.'
 fmt:
-	$(FORMATER) --write "$${params:-.}"
+	$(FORMATER) --write $(file)
 
 .PHONY: fmt-check
+file ?= '.'
 fmt-check:
-	$(FORMATER) --check "$${params:-.}"
+	$(FORMATER) --check $(file)
 
 # ------------------------------ CLEAN ------------------------------ #
 .PHONY: clean distclean
@@ -112,11 +111,10 @@ clean:
 distclean: clean
 	rm -rdf node_modules package-lock.json
 
-# ------------------------------ VARIOUS ------------------------------ #
-dirs:
-	$(MKDIRP) $(LOGDIR)
-
+# ------------------------------ ENV ------------------------------#
 .PHONY: env
-env: mode ?= production
+mode ?= 'production'
 env:
-	$(DOTENV) --mode=$(mode) $(ENVDIRS) > $(SRCDIR)/.env
+	$(DOTENV) --mode=$(mode) $(ENVDIRS) | $(SORT) > $(SRCDIR)/.env
+
+# ------------------------------ VARIOUS ------------------------------ #
