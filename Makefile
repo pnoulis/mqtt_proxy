@@ -119,4 +119,4 @@ dirs:
 .PHONY: env
 env: mode ?= production
 env:
-	$(DOTENV) --mode=$(mode) $(ENVDIRS)
+	$(DOTENV) --mode=$(mode) $(ENVDIRS) > $(SRCDIR)/.env
