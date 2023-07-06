@@ -13,7 +13,6 @@ class Proxy {
         return server.connected;
       },
     });
-
     this.server.on("message", (sub, msg) => {
       const subscription = this.subscriptions.get(sub);
       if (!subscription) {

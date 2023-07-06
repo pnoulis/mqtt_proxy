@@ -117,6 +117,15 @@ class Subscription {
     return client;
   }
 }
-stateful(Subscription, [Down, Connecting, Up, Delivering]);
+stateful(Subscription, [
+  Down,
+  "down",
+  Connecting,
+  "connecting",
+  Up,
+  "up",
+  Delivering,
+  "delivering",
+]);
 
 export { Subscription };

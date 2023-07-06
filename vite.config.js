@@ -12,6 +12,7 @@ const HOST = getEnvar("HOST", true, "production");
 export default defineConfig({
   ...conf,
   build: {
+    minify: true,
     outDir: "dist",
     target: "esnext",
     sourcemap: true,
