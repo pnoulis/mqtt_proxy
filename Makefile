@@ -39,15 +39,15 @@ all: build
 
 # ------------------------------ RUN ------------------------------ #
 .PHONY: run
-mode := 'development'
-file := '$(SRCDIR)/tmp/scratch.js'
+run: mode := 'development'
+run: file := '$(SRCDIR)/tmp/scratch.js'
 run: env
 	set -a; source ./.env && \
 	$(INTERPRETER) $(file) \
 	| $(PRETTY_OUTPUT)
 
 .PHONY: scratch
-mode := 'development'
+run: mode := 'development'
 scratch: env
 	set -a; source ./.env && \
 	$(INTERPRETER) ./tmp/scratch.js \
@@ -61,45 +61,45 @@ run-build:
 
 # ------------------------------ DEV ------------------------------ #
 .PHONY: dev
-mode := 'development'
+dev: mode := 'development'
 dev: env
 	set -a; source ./.env && \
 	$(BUNDLER) server --mode=$(mode)
 
 # ------------------------------ BUILD ------------------------------ #
 .PHONY: build
-mode := 'production'
+build: mode := 'production'
 build: env
 	set -a; source ./.env && \
 	$(BUNDLER) build --mode=$(mode)
 
 # ------------------------------ TEST ------------------------------ #
 .PHONY: test
-mode := 'testing'
-suite := *
+test: mode := 'testing'
+test: suite := *
 test: env
 	set -a; source ./.env && \
 	$(TESTER) run --reporter verbose --mode=$(mode) $(suite)
 
 # ------------------------------ LINT ------------------------------ #
 .PHONY: lint
-file := '.'
+lint: file := '.'
 lint:
 	$(LINTER) --ext js,jsx --fix $(file)
 
 .PHONY: lint-check
-file := '.'
+lint-check: file := '.'
 lint-check:
 	$(LINTER) --ext js,jsx $(file)
 
 # ------------------------------ FORMAT ------------------------------ #
 .PHONY: fmt
-file := '.'
+fmt: file := '.'
 fmt:
 	$(FORMATER) --write $(file)
 
 .PHONY: fmt-check
-file := '.'
+fmt-check: file := '.'
 fmt-check:
 	$(FORMATER) --check $(file)
 

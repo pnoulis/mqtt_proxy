@@ -78,6 +78,7 @@ class Subscription {
     } else {
       this.publisher = null;
     }
+
     return this.publisher;
   }
 

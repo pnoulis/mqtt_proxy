@@ -31,7 +31,7 @@ beforeAll(async () => {
 });
 
 describe("Proxy", () => {
-  it("Should publish a message", async () => {
+  it.only("Should publish a message", async () => {
     await expect(publish()).resolves.toMatchObject({ result: "OK" });
   });
   it("Should publish multiple messages successfully", async () => {

@@ -1,4 +1,4 @@
-import { TaskRunner } from "js_utils/task_runner";
+import { TaskRunner } from "js_utils/task_runners";
 import { Registry } from "./Registry.js";
 import { Subscription } from "./Subscription.js";
 import { SubscriptionClient, PublishingClient } from "./Client.js";
