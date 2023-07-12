@@ -12,7 +12,6 @@
     "url": "https://github.com/pnoulis/mqtt_proxy.git"
   },
   "scripts": {
-    "prepare": "make build-prod",
     "dev": "make run",
     "build": "make build",
     "test": "make test"
