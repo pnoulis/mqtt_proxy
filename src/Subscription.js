@@ -94,10 +94,10 @@ class Subscription {
   deliver(err, msg) {
     const { publisher, subs } = this.getRecipients();
     if (publisher) {
-      publisher.deliver(err, msg);
+      publisher.deliver(false, err, msg);
     }
     for (let i = 0; i < subs.length; i++) {
-      subs[i].deliver(err, msg);
+      subs[i].deliver(false, err, msg);
     }
     this.publishNextClient();
   }
