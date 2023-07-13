@@ -114,7 +114,7 @@ Proxy.prototype.publish = function publish(topic, message, options) {
           subscription.publish(
             new PublishingClient(
               (cb) => this.server.publish(pub, encoded, cb),
-              function (err, msg) {
+              function (unsubed, err, msg) {
                 return err ? reject(err) : resolve(msg);
               },
               options
