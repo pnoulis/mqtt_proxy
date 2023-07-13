@@ -46,6 +46,15 @@ Proxy.prototype.encode = function encode(msg = "") {
   }
 };
 
+
+/*
+  Listener callback example:
+
+  listener(unsubscribed, err, message);
+  where unsubscribed is a boolean. The listener is called with
+  unsubscribed to true if the client unsubscribed before a message
+  arrived.
+ */
 Proxy.prototype.subscribe = function subscribe(topic, listener, options) {
   return this.tr.run(
     () =>

@@ -14,12 +14,14 @@ class Client {
       }
     }
     if (clientIndex > -1) {
+      // deliver unsubscription message
+      this.subscription.clients[clientIndex]?.deliver.apply(null, [true, null]);
       this.subscription.clients = this.subscription.clients
         .slice(0, clientIndex)
         .concat(this.subscription.clients.slice(clientIndex + 1));
     } else {
       throw new Error(
-        `Failed to unsubscribe missing client with id:${this.id}`
+        `Failed to unsubscribe missing client with id:${this.id}`,
       );
     }
   }
