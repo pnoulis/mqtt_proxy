@@ -180,9 +180,8 @@ Registry.prototype.replaceParams = function replaceParams(...topics) {
 Registry.prototype.resolve = function resolve(route, options) {
   const [alias] = this.canonicalizeTopics(route);
   if (
-    !this.routes.has(alias) && Object.hasOwn(options, "strict")
-      ? options.strict
-      : this.strict
+    !this.routes.has(alias) &&
+    (Object.hasOwn(options, "strict") ? options.strict : this.strict)
   ) {
     throw new MqttRegistryError(`Unregistered route alias: ${alias}`);
   }

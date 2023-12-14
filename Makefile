@@ -29,5 +29,9 @@ build: | $(DISTDIR)
 $(DISTDIR):
 	mkdir -p $@
 
+run:
+	node tmp/scratch.js
+
+.PHONY: run
 .PHONY: build
 .PHONY: all
