@@ -69,7 +69,7 @@ Registry.prototype.setRoute = function setRoute(route) {
   const [alias, pub, sub] = this.canonicalizeTopics(
     route.alias,
     route.pub,
-    route.sub
+    route.sub,
   );
   return this.routes.set(alias, { pub, sub });
 };
@@ -151,7 +151,7 @@ Registry.prototype.replaceParams = function replaceParams(...topics) {
       const value = this.getParam(param);
       if (!value) {
         throw new MqttRegistryError(
-          `Missing parameter: ${param} for topic: ${topic}`
+          `Missing parameter: ${param} for topic: ${topic}`,
         );
       }
       return value;
@@ -177,9 +177,13 @@ Registry.prototype.replaceParams = function replaceParams(...topics) {
  * @throws {Error} Unregistered topic alias
  * @returns {string[]}
  */
-Registry.prototype.resolve = function resolve(route) {
+Registry.prototype.resolve = function resolve(route, options) {
   const [alias] = this.canonicalizeTopics(route);
-  if (!this.routes.has(alias) && this.strict) {
+  if (
+    !this.routes.has(alias) && Object.hasOwn(options, "strict")
+      ? options.strict
+      : this.strict
+  ) {
     throw new MqttRegistryError(`Unregistered route alias: ${alias}`);
   }
   let { pub, sub } = this.routes.get(alias) || { pub: alias, sub: alias };

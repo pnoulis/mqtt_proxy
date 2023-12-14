@@ -46,7 +46,6 @@ Proxy.prototype.encode = function encode(msg = "") {
   }
 };
 
-
 /*
   Listener callback example:
 
@@ -60,7 +59,7 @@ Proxy.prototype.subscribe = function subscribe(topic, listener, options) {
     () =>
       new Promise((resolve, reject) => {
         try {
-          const { pub, sub } = this.registry.resolve(topic);
+          const { pub, sub } = this.registry.resolve(topic, options);
           let subscription = this.subscriptions.get(sub);
           if (!subscription) {
             subscription = new Subscription(this.server, pub, sub);
@@ -73,18 +72,18 @@ Proxy.prototype.subscribe = function subscribe(topic, listener, options) {
           if (!/response|persistent/.test(options.mode)) {
             reject(
               new Error(
-                `subscribe() does not support options.mode:${options.mode}`
-              )
+                `subscribe() does not support options.mode:${options.mode}`,
+              ),
             );
           }
           const client = subscription.subscribe(
-            new SubscriptionClient(listener, options)
+            new SubscriptionClient(listener, options),
           );
           resolve(client.unsubscribe.bind(client));
         } catch (err) {
           reject(err);
         }
-      })
+      }),
   );
 };
 
@@ -93,7 +92,7 @@ Proxy.prototype.publish = function publish(topic, message, options) {
     () =>
       new Promise((resolve, reject) => {
         try {
-          const { pub, sub } = this.registry.resolve(topic);
+          const { pub, sub } = this.registry.resolve(topic, options);
           const encoded = this.encode(message);
           let subscription = this.subscriptions.get(sub);
           if (!subscription) {
@@ -107,8 +106,8 @@ Proxy.prototype.publish = function publish(topic, message, options) {
           if (!/response|ff/.test(options.mode)) {
             reject(
               new Error(
-                `publish() does not support options.mode:${options.mode}`
-              )
+                `publish() does not support options.mode:${options.mode}`,
+              ),
             );
           }
           subscription.publish(
@@ -117,13 +116,13 @@ Proxy.prototype.publish = function publish(topic, message, options) {
               function (unsubed, err, msg) {
                 return err ? reject(err) : resolve(msg);
               },
-              options
-            )
+              options,
+            ),
           );
         } catch (err) {
           reject(err);
         }
-      })
+      }),
   );
 };
 
